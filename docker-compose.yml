@@ -1,0 +1,25 @@
+version: '3' # версия синтаксиса
+services:
+ manga-express-app: # Сервер Express
+    build: .
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+      - manga-react-app
+    environment:
+      DATABASE_URL: 'mongodb://promix:antonnik@db:27017/mydatabase?authSource=admin&directConnection=true'
+ db: # База данных
+    image: prismagraphql/mongo-single-replica:5.0.3
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: promix
+      MONGO_INITDB_ROOT_PASSWORD: antonnik
+ manga-react-app: # React-приложение
+    build: ../manga # Путь к вашему React-приложению относительно корня вашего проекта
+    ports:
+      - '80:80' # Порт, на котором будет доступно ваше React-приложение
+      - '8000:8000' # Порт, на котором будет доступно ваше React-приложение
+volumes:
+ manga-app: # Объявление именованного тома
