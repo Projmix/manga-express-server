@@ -3,3 +3,5 @@ uploads
 .environment
 # Keep environment variables out of version control
 config
+env
+.env
