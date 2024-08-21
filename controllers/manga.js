@@ -73,7 +73,7 @@ const editManga = async (req, res) => {
         const { name } = req.params;
         const { title, description, genres, image } = req.body;
 
-        const manga = await prisma.manga.findUnique({
+        const manga = await prisma.manga.findFirst({
             where: { title: name },
         });
         
