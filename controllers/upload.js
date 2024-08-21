@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs/promises');
+const handleImageExtraction = require('../utils/handleImageExtraction');
 const { processFileAndUpload, extractAndProcessFiles } = require('../utils/fileProcessor');
 
 /**
