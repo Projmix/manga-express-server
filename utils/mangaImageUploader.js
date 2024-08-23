@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const tmp = require('tmp');
 const { uploadFilesToGCS } = require('./gcsUploader');
-
+const processImage = require('./imageProcessor');
 
 /**
  * Retrieves and downloads manga images from a given page URL.
@@ -33,15 +33,25 @@ async function uploadMangaImagesFromPage(pageUrl, imageSelector) {
       const { data: imageData } = await axios.get(imageUrl, { responseType: 'arraybuffer' });
       const tempFilePath = tmp.tmpNameSync({ postfix: path.extname(imageUrl) });
       await fs.writeFile(tempFilePath, imageData);
+
+      // Process the image, which may result in multiple parts
+      const processedFilePaths = await processImage(tempFilePath, path.dirname(tempFilePath));
       
-      const destination = `images/${i}_${Date.now()}${path.extname(imageUrl)}`;
-      filesToUpload.push({ filePath: tempFilePath, destination });
+      // Add each processed file part to the upload list
+      for (let j = 0; j < processedFilePaths.length; j++) {
+        const processedFilePath = processedFilePaths[j];
+        const destination = `images/${i}_${j}_${Date.now()}${path.extname(processedFilePath)}`;
+        filesToUpload.push({ filePath: processedFilePath, destination });
+      }
+
+      // Clean up the original temporary file
+      await fs.unlink(tempFilePath);
     }
 
-    // Batch upload all files to GCS
+    // Batch upload all processed files to GCS
     const uploadedUrls = await uploadFilesToGCS(filesToUpload);
 
-    // Clean up temporary files
+    // Clean up temporary processed files
     await Promise.all(filesToUpload.map(file => fs.unlink(file.filePath)));
 
     return uploadedUrls;
