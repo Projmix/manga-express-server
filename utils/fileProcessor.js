@@ -6,9 +6,17 @@ const extractFiles = require('./extractFiles');
 
 const processFileAndUpload = async (file) => {
   try {
-    const processedFilePath = path.join(__dirname, '../uploads', `processed-${file.filename}`);
-    await processImage(file.path, processedFilePath);
-    return uploadFileToGCS(processedFilePath, `images/${file.filename}`);
+    const processedFilePaths = await processImage(file.path, path.join(__dirname, '../uploads'));
+    
+    // Ensure we're handling an array of file paths
+    if (!Array.isArray(processedFilePaths)) {
+      processedFilePaths = [processedFilePaths];
+    }
+    
+    // Upload each processed image part
+    return Promise.all(processedFilePaths.map(processedFilePath =>
+      uploadFileToGCS(processedFilePath, `images/${path.basename(processedFilePath)}`)
+    ));
   } catch (error) {
     console.error(`Error processing file ${file.filename}:`, error.message);
     throw new Error(`Failed to process and upload file: ${file.filename}`);
@@ -23,10 +31,16 @@ const extractAndProcessFiles = async (file) => {
 
     const extractedFiles = await fs.readdir(extractDir);
     return Promise.all(extractedFiles.map(async (extractedFile) => {
-      const processedFilePath = path.join(extractDir, `processed-${extractedFile}`);
-      const timestampedFileName = `${path.basename(extractedFile, path.extname(extractedFile))}_${Date.now()}${path.extname(extractedFile)}`;
-      await processImage(path.join(extractDir, extractedFile), processedFilePath);
-      return uploadFileToGCS(processedFilePath, `images/${timestampedFileName}`);
+      const processedFilePaths = await processImage(path.join(extractDir, extractedFile), extractDir);
+      
+      if (!Array.isArray(processedFilePaths)) {
+        processedFilePaths = [processedFilePaths];
+      }
+      
+      return Promise.all(processedFilePaths.map(processedFilePath => {
+        const timestampedFileName = `${path.basename(processedFilePath, path.extname(processedFilePath))}_${Date.now()}${path.extname(processedFilePath)}`;
+        return uploadFileToGCS(processedFilePath, `images/${timestampedFileName}`);
+      }));
     }));
   } catch (error) {
     console.error(`Error extracting and processing files from ${file.filename}:`, error.message);
