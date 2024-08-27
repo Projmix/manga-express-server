@@ -5,7 +5,6 @@ const scrapeAndDownloadMangakakalotImages = require('./siteHandlers/mangakakalot
 const scrapeAndDownloadMangareadImages = require('./siteHandlers/mangareadHandler');
 const scrapeAndDownloadChapMangaNatoImages = require('./siteHandlers/chapMangaNatoHandler');
 const scrapeAndDownloadKunMangaImages = require('./siteHandlers/kunMangaHandler');
-const scrapeAndDownloadMangaBuddyImages = require('./siteHandlers/mangaBuddyHandler');
 
 
 /**
