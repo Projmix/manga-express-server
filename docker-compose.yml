@@ -8,14 +8,14 @@ services:
       - db
       - manga-react-app
     environment:
-      DATABASE_URL: 'mongodb://promix:antonnik@db:27017/mydatabase?authSource=admin&directConnection=true'
+      DATABASE_URL: 'mongodb://promix:test@db:27017/mydatabase?authSource=admin&directConnection=true'
  db: # База данных
     image: prismagraphql/mongo-single-replica:5.0.3
     ports:
       - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: promix
-      MONGO_INITDB_ROOT_PASSWORD: antonnik
+      MONGO_INITDB_ROOT_PASSWORD: test
  manga-react-app: # React-приложение
     build: ../manga # Путь к вашему React-приложению относительно корня вашего проекта
     ports:
